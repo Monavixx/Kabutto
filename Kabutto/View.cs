@@ -11,44 +11,25 @@ namespace Kabutto
     abstract class View
     {
         public Config Configure;
-        public void GenerateResponse(HttpListenerContext client)
-        {
-            byte[] baResponse = Encoding.UTF8.GetBytes(Response(client));
-            client.Response.ContentLength64 = baResponse.Length;
-            client.Response.ContentType = "text/html; charset=utf-8";
-            client.Response.OutputStream.Write(baResponse, 0, baResponse.Length);
-        }
 
-        public virtual string Response(HttpListenerContext client)
+        public virtual HttpResponse Response(HttpRequest request)
         {
-            switch(client.Request.HttpMethod)
+            switch(request.Method)
             {
                 case "GET":
-                    return Get(client);
+                    return Get(request);
                 case "POST":
-                    return Post(client);
+                    return Post(request);
                 default:
-                    return "";
+                    throw new Exception("Raw Method Exception");
             }
         }
-        public abstract string Get(HttpListenerContext client);
-        public abstract string Post(HttpListenerContext client);
+        public abstract HttpResponse Get(HttpRequest client);
+        public abstract HttpResponse Post(HttpRequest client);
 
-        public static string Render(HttpListenerContext client, string templateName, Dictionary<string, string> context = null)
+        public static HttpResponse Render(HttpRequest client, string templateName, Dictionary<string, string> context = null)
         {
-            return new TemplateEngine(File.ReadAllText(templateName), context).Process();
-        }
-    }
-    class ViewTest : View
-    {
-        public override string Get(HttpListenerContext client)
-        {
-            return Render(client, "index.html", new Dictionary<string, string> { { "projectname", Configure.ProjectName } });
-        }
-
-        public override string Post(HttpListenerContext client)
-        {
-            throw new NotImplementedException();
+            return new HttpResponse { Data= new TemplateEngine(File.ReadAllText(templateName), context).Process(), ContentType = "text/html" };
         }
     }
 }

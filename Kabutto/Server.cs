@@ -11,55 +11,61 @@ namespace Kabutto
 {
     class Server
     {
-        private string ipAddress;
+        private IPAddress ipAddress;
         private short port;
-        public HttpListener server;
+        public TcpListener server;
         public Dictionary<string, View> Views;
         public string[] StaticFilesPath;
         private List<string> staticFiles = new List<string>();
 
         public Server(string ip, short port)
         {
-            ipAddress = ip;
+            ipAddress = IPAddress.Parse(ip);
             this.port = port;
         }
         public Server(short port)
         {
-            ipAddress = "*";
+            ipAddress = IPAddress.Any;
             this.port = port;
         }
 
         public void Run()
         {
-            server = new HttpListener();
+            server = new TcpListener(ipAddress, port);
 
-            Console.WriteLine("http://" + ipAddress.ToString() + ":" + port + "/");
-            server.Prefixes.Add("http://" + ipAddress.ToString() + ":" + port + "/");
+            string urladdress = "http://" + ipAddress.ToString() + ":" + port + "/";
+            Console.WriteLine(urladdress);
             server.Start();
 
             while (true)
             {
                 Console.WriteLine("Ожидание подключений... ");
 
-                HttpListenerContext client = server.GetContext();
+                TcpClient client = server.AcceptTcpClient();
                 Console.WriteLine("Подключен клиент. Выполнение запроса...");
 
-                if (Views.ContainsKey(client.Request.RawUrl))
+                HttpRequest httpRequest = new HttpRequest(client.ReadAll());
+                
+                httpRequest.Parse();
+
+                HttpResponse response = null;
+
+                if (Views.ContainsKey(httpRequest.Path))
                 {
-                    Views[client.Request.RawUrl].GenerateResponse(client);
+                    response = Views[httpRequest.Path].Response(httpRequest);
                 }
-                else if(staticFiles.Contains(client.Request.RawUrl))
+                else if (staticFiles.Contains(httpRequest.Path))
                 {
-                    StaticFile staticFile = new StaticFile(client.Request.RawUrl[1..]);
-                    staticFile.GenerateResponse(client);
+                    StaticFile staticFile = new StaticFile(httpRequest.Path[1..^1]);
+                    response = staticFile.GenerateResponse(httpRequest);
                 }
                 else
                 {
-                    byte[] data = Encoding.UTF8.GetBytes("404");
-                    client.Response.ContentType = "text/plain";
-                    client.Response.ContentLength64 = data.Length;
-                    client.Response.OutputStream.Write(data, 0, data.Length);
+                    response = new HttpResponse { Data = "404", ContentType = "text/plain", StatusCode = 404, StatusDescription = "Error" };
                 }
+
+                client.Send(response);
+                client.Close();
             }
         }
 
@@ -71,7 +77,7 @@ namespace Kabutto
                     foreach (var item2 in Directory.GetFiles(item))
                     {
                         string data = "/" + item2;
-                        data = data.Replace("\\", "/");
+                        data = data.Replace("\\", "/") + "/";
 
                         staticFiles.Add(data);
                     }

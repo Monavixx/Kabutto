@@ -19,29 +19,30 @@ namespace Kabutto
             ContentType = contentType;
         }
 
-        public void GenerateResponse(HttpListenerContext client)
+        public HttpResponse GenerateResponse(HttpRequest request)
         {
+            HttpResponse response = new HttpResponse();
+
             if (ContentType == null)
             {
                 switch (Path.GetExtension(Filename))
                 {
                     case "css":
-                        client.Response.ContentType = "text/css; charset=utf-8";
+                        response.ContentType = "text/css; charset=utf-8";
                         break;
                     case "js":
-                        client.Response.ContentType = "text/javascript; charset=utf-8";
+                        response.ContentType = "text/javascript; charset=utf-8";
                         break;
                 }
             }
             else
             {
-                client.Response.ContentType = ContentType;
+                response.ContentType = ContentType;
             }
 
-            string data = File.ReadAllText(Filename);
-            byte[] baData = Encoding.UTF8.GetBytes(data);
-            client.Response.ContentLength64 = baData.Length;
-            client.Response.OutputStream.Write(baData, 0, baData.Length);
+            response.Data = File.ReadAllText(Filename);
+
+            return response;
         }
     }
 }
