@@ -61,7 +61,7 @@ namespace Kabutto
                 }
                 else
                 {
-                    response = new HttpResponse { Data = "404", ContentType = "text/plain", StatusCode = 404, StatusDescription = "Error" };
+                    response = Error.e404(httpRequest);
                 }
 
                 client.Send(response);

@@ -27,9 +27,9 @@ namespace Kabutto
         public abstract HttpResponse Get(HttpRequest client);
         public abstract HttpResponse Post(HttpRequest client);
 
-        public static HttpResponse Render(HttpRequest client, string templateName, Dictionary<string, string> context = null)
+        public static HttpResponse Render(HttpRequest client, string templateName, Dictionary<string, string> context = null, ushort statusCode = 200, string statusDescription = "OK")
         {
-            return new HttpResponse { Data= new TemplateEngine(File.ReadAllText(templateName), context).Process(), ContentType = "text/html" };
+            return new HttpResponse { Data= new TemplateEngine(File.ReadAllText(templateName), context).Process(), ContentType = "text/html", StatusCode=statusCode, StatusDescription = statusDescription };
         }
     }
 }
