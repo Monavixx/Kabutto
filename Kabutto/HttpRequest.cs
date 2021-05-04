@@ -10,8 +10,10 @@ namespace Kabutto
     public sealed class HttpRequest
     {
         public string Method;
-        public Dictionary<string, string> POST = new(), GET = new(), Headers = new();
+		public Dictionary<string, string> POST = new(), GET = new(), Cookies = new();
+		public List<Header> Headers = new();
         public string Path;
+		public List<Session> Sessions;
 
         public string Request;
 
@@ -47,7 +49,7 @@ namespace Kabutto
 			foreach(var item in lines)
 			{
 				temp = item.Split(": ").ToList();
-				Headers.Add(temp[0], temp[1]);
+				Headers.Add(new (temp[0], temp[1]));
 			}
 
 			// Обработка данных post-запроса
@@ -88,6 +90,20 @@ namespace Kabutto
 			// То есть обработка кодов по типу %20.
 			Path = (Path.EndsWith("/") ? Path : Path + "/");
 			Path = HttpUtility.UrlDecode(Path);
+
+			// Cookies
+			foreach(var item in Headers)
+            {
+				if(item.Name == "Cookie")
+                {
+					string[] cookies = item.Value.Split("; ");
+					foreach(var cookie in cookies)
+                    {
+						string[] cookiesData = cookie.Split('=');
+						Cookies.Add(cookiesData[0], cookiesData[1]);
+                    }
+                }
+            }
 		}
 
     }

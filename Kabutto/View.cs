@@ -29,7 +29,11 @@ namespace Kabutto
 
         public static HttpResponse Render(HttpRequest client, string templateName, Dictionary<string, string> context = null, ushort statusCode = 200, string statusDescription = "OK")
         {
-            return new HttpResponse { Data= new TemplateEngine(File.ReadAllText(templateName), context).Process(), ContentType = "text/html", StatusCode=statusCode, StatusDescription = statusDescription };
+            return new HttpResponse { Data = new TemplateEngine(File.ReadAllText(templateName), context).Process(), ContentType = "text/html", StatusCode = statusCode, StatusDescription = statusDescription };
+        }
+        public static bool CheckCSRF(HttpRequest request, Config config)
+        {
+            return request.POST[config.NameCSRFToken] != request.Sessions.Get(config.NameCSRFToken).Data;
         }
     }
 }

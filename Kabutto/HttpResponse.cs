@@ -14,10 +14,11 @@ namespace Kabutto
         public long? ContentLength = null;
         public string Data;
         public Dictionary<string, string> Headers;
+        public List<Cookie> Cookies = new();
 
         public string Response;
         
-        public string GenerateResponse()
+        public override string ToString()
         {
             ContentLength ??= Encoding.UTF8.GetBytes(Data).Length;
             string response = "HTTP/1.1 " + StatusCode.ToString() + StatusDescription
@@ -27,6 +28,12 @@ namespace Kabutto
             foreach((string key, string value) in Headers)
             {
                 response += "\n" + key + ": " + value;
+            }
+
+            if(Cookies != null)
+            foreach(var item in Cookies)
+            {
+                response += "\n" + item.ToString();
             }
 
             response += "\n\n" + Data;

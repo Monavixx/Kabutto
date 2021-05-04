@@ -11,12 +11,26 @@ namespace Kabutto
     {
         public override HttpResponse Get(HttpRequest request)
         {
-            return Render(request, "index.html", new Dictionary<string, string> { { "projectname", Configure.ProjectName }, { "anatar", request.GET.ContainsKey("anatar") ? request.GET["anatar"] : "loh"} });
+            return Render(request, "index.html", new Dictionary<string, string> { { "CSRFToken", request.Sessions.Get("CSRFToken").Data }, { "projectname", Configure.ProjectName }, { "anatar", request.Cookies.ContainsKey("Name") ? request.Cookies["Name"] : "no cookie" } });
         }
 
         public override HttpResponse Post(HttpRequest request)
         {
-            return Render(request, "index.html", new Dictionary<string, string> { { "projectname", Configure.ProjectName }, { "anatar", request.POST["anatar"]} });
+            if (CheckCSRF(request, Configure))
+            {
+                return new HttpResponse { Data = "CSRF-attack", ContentType = "text/html" };
+            }
+
+            HttpResponse response = Render(request, "index.html", new Dictionary<string, string> { { "projectname", Configure.ProjectName }, { "anatar", request.Cookies.ContainsKey("Name") ? request.Cookies["Name"] : "no cookie" } });
+
+            response.Cookies.Add(new Cookie
+            {
+                Name="Name",
+                Value=request.POST["name"],
+                MaxAge=60
+            });
+
+            return response;
         }
     }
 

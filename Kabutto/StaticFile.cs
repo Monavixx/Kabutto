@@ -11,9 +11,9 @@ namespace Kabutto
     class StaticFile
     {
         public string Filename;
-        public string? ContentType;
+        public string ContentType;
 
-        public StaticFile(string filename, string? contentType = null)
+        public StaticFile(string filename, string contentType = null)
         {
             Filename = filename;
             ContentType = contentType;

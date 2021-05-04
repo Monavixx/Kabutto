@@ -21,6 +21,7 @@ namespace Kabutto
         public string ProjectName;
         public string StaticFilesPath;
         public string IpAddress;
+        public string NameCSRFToken = "CSRFToken";
         public short Port;
 
         public void Parse()
@@ -32,7 +33,7 @@ namespace Kabutto
                     ProjectName = item.Value;
                 else if (item.Name == "StaticFilesPath")
                     StaticFilesPath = item.Value;
-                else if(item.Name == "Run")
+                else if (item.Name == "Run")
                 {
                     foreach (var item2 in item.Elements())
                     {
@@ -42,6 +43,7 @@ namespace Kabutto
                             Port = short.Parse(item2.Value);
                     }
                 }
+                else if (item.Name == "NameCSRFToken") NameCSRFToken = item.Value;
             }
         }
     }

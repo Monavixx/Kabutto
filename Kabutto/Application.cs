@@ -19,7 +19,7 @@ namespace Kabutto
             config.Parse();
 
             Name = config.ProjectName;
-            server = new Server(config.IpAddress, config.Port);
+            server = new Server(config.IpAddress, config.Port, config);
             Views = new();
             server.Views = Views;
         }

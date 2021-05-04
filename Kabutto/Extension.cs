@@ -19,8 +19,12 @@ namespace Kabutto
         }
         public static void Send(this TcpClient client, HttpResponse response)
         {
-            byte[] data = Encoding.UTF8.GetBytes(response.GenerateResponse());
+            byte[] data = Encoding.UTF8.GetBytes(response.ToString());
             client.GetStream().Write(data, 0, data.Length);
+        }
+        public static Session Get(this List<Session> sessions, string key)
+        {
+            return sessions.Find(session => session.Key == key);
         }
     }
 }

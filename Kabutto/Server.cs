@@ -17,16 +17,20 @@ namespace Kabutto
         public Dictionary<string, View> Views;
         public string[] StaticFilesPath;
         private List<string> staticFiles = new List<string>();
+        private Config config;
+        private Dictionary<string, List<Session>> Sessions = new();
 
-        public Server(string ip, short port)
+        public Server(string ip, short port, Config config)
         {
             ipAddress = IPAddress.Parse(ip);
             this.port = port;
+            this.config = config;
         }
-        public Server(short port)
+        public Server(short port, Config config)
         {
             ipAddress = IPAddress.Any;
             this.port = port;
+            this.config = config;
         }
 
         public void Run()
@@ -44,8 +48,27 @@ namespace Kabutto
                 TcpClient client = server.AcceptTcpClient();
                 Console.WriteLine("Подключен клиент. Выполнение запроса...");
 
+                IPAddress clientIp = ((IPEndPoint)client.Client.RemoteEndPoint).Address;
+                string clientIpStr = clientIp.ToString();
+
+
+                List<Session> clientSessions = null;
+                if(Sessions.ContainsKey(clientIpStr))
+                {
+                    clientSessions = Sessions[clientIpStr];
+                    if(!clientSessions.Exists(session => session.Key == config.NameCSRFToken))
+                    {
+                        clientSessions.Add(new Session(clientIp, config.NameCSRFToken, Session.GenerateCSRFToken()));
+                    }
+                }
+                else
+                {
+                    clientSessions = new List<Session> { new Session(clientIp, config.NameCSRFToken, Session.GenerateCSRFToken()) };
+                    Sessions.Add(clientIpStr, clientSessions);
+                }
+
                 HttpRequest httpRequest = new HttpRequest(client.ReadAll());
-                
+                httpRequest.Sessions = clientSessions;
                 httpRequest.Parse();
 
                 HttpResponse response = null;
@@ -74,13 +97,13 @@ namespace Kabutto
             foreach (var item in StaticFilesPath)
             {
                 if (Directory.Exists(item))
-                    foreach (var item2 in Directory.GetFiles(item))
-                    {
-                        string data = "/" + item2;
-                        data = data.Replace("\\", "/") + "/";
+                foreach (var item2 in Directory.GetFiles(item))
+                {
+                    string data = "/" + item2;
+                    data = data.Replace("\\", "/") + "/";
 
-                        staticFiles.Add(data);
-                    }
+                    staticFiles.Add(data);
+                }
             }
         }
     }
