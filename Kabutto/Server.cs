@@ -19,6 +19,7 @@ namespace Kabutto
         private List<string> staticFiles = new List<string>();
         private Config config;
         private Dictionary<string, List<Session>> Sessions = new();
+        public Dictionary<string, string> GlobalContext;
 
         public Server(string ip, short port, Config config)
         {

@@ -14,7 +14,12 @@ namespace Kabutto
             if (File.Exists("404.html"))
                 return View.Render(request, "404.html", statusCode: 404, statusDescription: "NotFound");
             else
-                return new HttpResponse { Data = "Error 404", ContentType = "text/html", StatusCode = 404, StatusDescription = "NotFound" };
+                return new HttpResponse { Data = "<b>HTTP 404 error: Not found</b>", ContentType = "text/html", StatusCode = 404, StatusDescription = "NotFound" };
+        }
+
+        public static HttpResponse Custom(HttpRequest request, ushort code, string description = "Error")
+        {
+            return new HttpResponse { Data = $"<b>HTTP {code} error: {description}</b>", ContentType = "text/html", StatusCode = code, StatusDescription = description };
         }
     }
 }

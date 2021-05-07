@@ -27,10 +27,23 @@ namespace Kabutto
             {
                 Name="Name",
                 Value=request.POST["name"],
-                MaxAge=60
+                MaxAge = 60
             });
 
             return response;
+        }
+    }
+
+    class ViewTest2 : View
+    {
+        public override HttpResponse Get(HttpRequest request)
+        {
+            return Redirect("/");
+        }
+
+        public override HttpResponse Post(HttpRequest request)
+        {
+            throw new Exception("Post");
         }
     }
 
@@ -41,6 +54,7 @@ namespace Kabutto
             Application ap = new Application("config.xml");
 
             ap.Add("/", new ViewTest());
+            ap.Add("/hello/", new ViewTest2());
 
             ap.Start();
         }

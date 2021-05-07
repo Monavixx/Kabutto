@@ -11,6 +11,7 @@ namespace Kabutto
         public ushort StatusCode = 200;
         public string StatusDescription = "OK";
         public string ContentType;
+        public string Location = null;
         public long? ContentLength = null;
         public string Data;
         public Dictionary<string, string> Headers;
@@ -20,9 +21,13 @@ namespace Kabutto
         
         public override string ToString()
         {
-            ContentLength ??= Encoding.UTF8.GetBytes(Data).Length;
-            string response = "HTTP/1.1 " + StatusCode.ToString() + StatusDescription
-                + "\nContent-Type: " + ContentType + "\nContent-Length: " + ContentLength.ToString();
+            string response = "HTTP/1.1 " + StatusCode.ToString() + StatusDescription;
+
+            if (ContentType != null)
+            {
+                ContentLength ??= Encoding.UTF8.GetBytes(Data).Length;
+                response += "\nContent-Type: " + ContentType + "\nContent-Length: " + ContentLength.ToString();
+            }
 
             if(Headers != null)
             foreach((string key, string value) in Headers)
@@ -36,6 +41,10 @@ namespace Kabutto
                 response += "\n" + item.ToString();
             }
 
+            if (Location != null)
+                response += "\nLocation: " + Location;
+
+            if(Data != null)
             response += "\n\n" + Data;
 
             return response;

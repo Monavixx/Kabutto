@@ -11,6 +11,7 @@ namespace Kabutto
     abstract class View
     {
         public Config Configure;
+        public Dictionary<string, string> GlobalContext;
 
         public virtual HttpResponse Response(HttpRequest request)
         {
@@ -34,6 +35,10 @@ namespace Kabutto
         public static bool CheckCSRF(HttpRequest request, Config config)
         {
             return request.POST[config.NameCSRFToken] != request.Sessions.Get(config.NameCSRFToken).Data;
+        }
+        public static HttpResponse Redirect(string location, ushort code = 301, string description = "Move Permanently")
+        {
+            return new HttpResponse { Location = location, StatusCode = code, StatusDescription = description };
         }
     }
 }
